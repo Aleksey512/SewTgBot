@@ -1,0 +1,28 @@
+version: '3.9'
+
+services:
+
+  web:
+    build: ./app
+    ports:
+      - "8008:8000"
+    command: python3 main.py
+    volumes:
+      - ./app:/usr/src/app
+    env_file:
+      - .env
+
+#  redis:
+#    build:
+#      context: redis
+#    image: myredis
+#    restart: always
+#    privileged: true
+#    command: sh -c "./init.sh"
+#    env_file:
+#      - .env
+#    volumes:
+#      - redis_data:/data:r
+
+#volumes:
+#  redis_data:
