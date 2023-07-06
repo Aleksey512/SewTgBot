@@ -14,7 +14,7 @@ class CheckAuthMessageMiddleware(BaseMiddleware):
     ) -> Any:
         if data['state']:
             state_data = await data['state'].get_data()
-            if 'user_id' in state_data:
+            if 'user' in state_data:
                 return await handler(event, data)
             await event.answer(
                 "Вы не вошли в систему!",
