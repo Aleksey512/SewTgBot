@@ -32,6 +32,13 @@ async def main() -> None:
              password=f"{os.getenv('ADMIN_PASSWORD')}",
              role="admin",
              )
+    add_user(session,
+             name='Директор',
+             surname='Директор',
+             login=f"director",
+             password=f"{os.getenv('ADMIN_PASSWORD')}",
+             role="director",
+             )
     bot = Bot(TG_TOKEN, parse_mode="HTML")
 
     # storage = RedisStorage.from_url(
