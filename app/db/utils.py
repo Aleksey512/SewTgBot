@@ -1,9 +1,9 @@
 import logging
-from typing import List, Any, Sequence, Tuple
 from datetime import datetime
-from dateutil.relativedelta import relativedelta
+from typing import List, Any, Sequence
 
 import sqlalchemy.exc
+from dateutil.relativedelta import relativedelta
 from sqlalchemy import select, update, and_, Row, func
 from sqlalchemy.orm import Session
 
@@ -82,7 +82,8 @@ def get_all_users_by_ids(session: Session, user_ids: List[int]) -> Sequence[Row[
 def get_cur_month_procedure(session: Session, user_id: int) -> Sequence[Row[tuple[Any, ...] | Any]]:
     start_month = datetime(datetime.now().year, datetime.now().month, 1, 0, 0, 1)
     end_month = start_month + relativedelta(months=1)
-    stmt = select(Procedure, User_Procedure.count, User_Procedure.created_at).join(User_Procedure).filter(
+    stmt = select(Procedure, User_Procedure.count, User_Procedure.created_at, User_Procedure.id).join(
+        User_Procedure).filter(
         and_(
             User_Procedure.user_id == user_id,
             func.date(User_Procedure.created_at) >= start_month,
@@ -232,13 +233,13 @@ def add_procedure(session: Session,
 def add_user_procedure(session: Session,
                        user_id: int,
                        procedure_id: int,
-                       count: int) -> bool:
+                       count: int) -> User_Procedure | bool:
     try:
         stmt = User_Procedure(user_id=user_id, procedure_id=procedure_id, count=count)
         session.add(stmt)
         session.commit()
         session.close()
-        return True
+        return stmt
     except Exception as e:
         session.rollback()
         logging.error(f"SetUsersProcedureException {e}")

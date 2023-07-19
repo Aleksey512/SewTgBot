@@ -1,13 +1,12 @@
+from datetime import datetime
 from typing import List
 
-from datetime import datetime
-
-from sqlalchemy import Column, String, Integer, Text, Date, ForeignKey, Table, Double, BLOB, Numeric
+import bcrypt
+from sqlalchemy import Column, String, Integer, Date, ForeignKey, Table, Numeric
+from sqlalchemy.dialects.postgresql import BYTEA
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
-
-import bcrypt
 
 from db.conn import Base
 
@@ -54,7 +53,7 @@ class User(Base):
     surname: Mapped[str] = mapped_column(String(64), nullable=True)
     telegram_id: Mapped[str] = mapped_column(String, index=True, nullable=True, unique=True)
     login: Mapped[str] = mapped_column(String(32), unique=True, index=True)
-    password: Mapped[bytes] = mapped_column(BLOB)
+    password: Mapped[bytes] = mapped_column(BYTEA)
     role: Mapped[str] = mapped_column(String(32), default="employee")
     created_at: Mapped[datetime] = mapped_column(Date, default=datetime.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(Date, onupdate=datetime.now(), default=datetime.now())
@@ -91,8 +90,8 @@ class Procedure(Base):
     object_id: Mapped["Object"] = mapped_column(ForeignKey('objects_table.id', ondelete="CASCADE"), index=True)
     name: Mapped[str] = mapped_column(String(64))
     time: Mapped[int] = mapped_column()
-    tariff: Mapped[float] = mapped_column(Numeric(precision=10, scale=3))
-    rate: Mapped[float] = mapped_column(Numeric(precision=10, scale=3))
+    tariff: Mapped[float] = mapped_column(Numeric(precision=10, scale=2))
+    rate: Mapped[float] = mapped_column(Numeric(precision=10, scale=2))
     created_at: Mapped[datetime] = mapped_column(Date, default=datetime.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(Date, onupdate=datetime.now(), default=datetime.now())
     users: Mapped[List["User_Procedure"]] = relationship(back_populates="procedure")

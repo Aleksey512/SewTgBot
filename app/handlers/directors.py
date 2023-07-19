@@ -250,7 +250,7 @@ async def process_procedure_tariff(message: Message, state: FSMContext):
                      data['p_name'],
                      data['p_time'],
                      float(message.text),
-                     round(float(data['p_time']) * float(message.text), 3)):
+                     round(float(data['p_time']) * float(message.text), 2)):
         await state.set_state(Director.confirm_create_procedure)
         await message.answer("<em>Процедура успешно добавлена</em>")
         await message.answer("Хотите добавить еще одну процедуру?", reply_markup=yes_no_kb)

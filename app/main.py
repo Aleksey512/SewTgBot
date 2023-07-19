@@ -18,7 +18,7 @@ from handlers.profile import router as profile_router
 from middlewares.middleware import CheckAuthCallbackMiddleware
 from ui_commands import set_ui_commands
 
-TG_TOKEN = "6102790588:AAEeifshsCjfGqzon2yHHXZOBwy4oT7krIg"
+TG_TOKEN = os.getenv("TG_TOKEN")
 
 router = Router()
 
@@ -35,8 +35,22 @@ async def main() -> None:
     add_user(session,
              name='Директор',
              surname='Директор',
-             login=f"director",
-             password=f"{os.getenv('ADMIN_PASSWORD')}",
+             login=f"director1",
+             password=f"{os.getenv('DIRECTOR_PASSWORD')}",
+             role="director",
+             )
+    add_user(session,
+             name='Директор2',
+             surname='Директор2',
+             login=f"director2",
+             password=f"{os.getenv('DIRECTOR_PASSWORD')}",
+             role="director",
+             )
+    add_user(session,
+             name='Директор3',
+             surname='Директор3',
+             login=f"director3",
+             password=f"{os.getenv('DIRECTOR_PASSWORD')}",
              role="director",
              )
     bot = Bot(TG_TOKEN, parse_mode="HTML")

@@ -368,12 +368,12 @@ async def director_procedures_list_next(query: CallbackQuery, state: FSMContext)
     for procedure in data:
         text_ += f"Название: <b>{procedure[0].name}</b>\n" \
                  f"Время: <b>{procedure[0].time}</b>\n" \
-                 f"Тариф: <b>{procedure[0].tariff}</b>\n" \
-                 f"Расценка: <b>{procedure[0].rate}</b>\n\n"
+                 f"Тариф: <b>{round(procedure[0].tariff, 1)}</b>\n" \
+                 f"Расценка: <b>{round(procedure[0].rate, 1)}</b>\n\n"
         time += procedure[0].time
         rate += procedure[0].rate
     text_ += f"Итого затрачено времени на объект: <b>{time}</b> ед.\n" \
-             f"Итого расценка за объект: <b>{rate}</b> ед."
+             f"Итого расценка за объект: <b>{round(rate, 1)}</b> руб."
     await query.message.answer(text_, reply_markup=set_director_object_menu_procedure().as_markup())
 
 
@@ -566,14 +566,14 @@ async def employee_all_statistics(query: CallbackQuery, state: FSMContext):
         return
     money_month = 0
     money_day = 0
-    for proc, count, created_at in cur_proc:
+    for proc, count, created_at, _ in cur_proc:
         if proc.rate == 0 or count == 0:
             continue
         if created_at == date.today():
             money_day += Decimal(count) * proc.rate
         money_month += Decimal(count) * proc.rate
-    await query.message.answer(f"Заработано за текущий день: <b>{money_day}</b>\n"
-                               f"Заработано за текущий месяц: <b>{money_month}</b>",
+    await query.message.answer(f"Заработано за текущий день: <b>{round(money_day, 1)} руб.</b>\n"
+                               f"Заработано за текущий месяц: <b>{round(money_month, 1)} руб.</b>",
                                reply_markup=set_menu_get_statistics_employee_kb().as_markup())
 
 
@@ -587,7 +587,7 @@ async def employee_detail_statistics(query: CallbackQuery, state: FSMContext):
                                    reply_markup=set_menu_get_statistics_employee_kb().as_markup())
         return
     data = {}
-    for proc, count, created_at in cur_proc:
+    for proc, count, created_at, _ in cur_proc:
         if proc.rate == 0 or count == 0:
             continue
         if f'{proc.created_at}' not in data:
@@ -624,19 +624,19 @@ async def employee_detail_statistics(query: CallbackQuery, state: FSMContext):
                 text += f'<em><u>№ {ids}</u>\n' \
                         f'Количество: {data[keys][name][ids]["count"]}\n' \
                         f'Потраченное время: {data[keys][name][ids]["time"]}\n' \
-                        f'Заработано: {data[keys][name][ids]["money"]}\n</em>'
+                        f'Заработано: {round(data[keys][name][ids]["money"], 1)} руб.\n</em>'
                 count += data[keys][name][ids]["count"]
                 money += data[keys][name][ids]["money"]
                 time += data[keys][name][ids]["time"]
             text += '\n'
         text += f'<b>Количество операций за этот день: {count}\n' \
                 f'Потрачено времени за этот день {time}\n' \
-                f'Заработано за это день: {money}\n\n\n</b>'
+                f'Заработано за это день: {round(money, 1)} руб.\n\n\n</b>'
         all_time += time
         all_money += money
         all_count += count
     text += f'<b>Количество операций за этот месяц: {all_count}\n' \
             f'Потрачено времени за этот месяц {all_time}\n' \
-            f'Заработано за это месяц: {all_money}\n\n\n</b>'
+            f'Заработано за это месяц: {round(all_money, 1)} руб.\n\n\n</b>'
     await query.message.answer(text,
                                         reply_markup=set_menu_get_statistics_employee_kb().as_markup())
