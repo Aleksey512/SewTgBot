@@ -1,3 +1,6 @@
+import datetime
+import io
+import logging
 import os
 import re
 from datetime import date
@@ -7,14 +10,18 @@ from pprint import pprint
 from aiogram import Router
 from aiogram.filters import Text
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, InputFile, FSInputFile, BufferedInputFile
 
 from db.conn import session
 from db.utils import *
 from keyboards.keyboards import yes_no_kb
 from keyboards.markup import *
 from states.states import Profile, Director, Entered, Employee
+from utils.excel.to_excel import statistics_to_excel_cur_month
 from utils.utils import show_profile
+
+from calendar import monthrange
+from openpyxl.writer.excel import save_virtual_workbook
 
 router = Router(name="callbacks-router")
 
@@ -514,6 +521,25 @@ async def back_to_procedure_menu(query: CallbackQuery, state: FSMContext):
                                parse_mode="HTML")
 
 
+@router.callback_query(Text('menu_get_statistic_director'))
+async def menu_get_statistic_director(query: CallbackQuery, state: FSMContext):
+    await query.message.delete()
+    await state.set_state(Entered.in_system)
+
+    cur_data = datetime.now()
+    month_max = monthrange(cur_data.year, cur_data.month)[1]
+    data = get_all_information(session)
+    wb = statistics_to_excel_cur_month(data, cur_data, month_max)
+    f = save_virtual_workbook(wb)
+    await query.message.answer_document(
+        BufferedInputFile(f,
+                          filename=f"Статистика c " +
+                                   f"1.{cur_data.month}.{cur_data.year} по " +
+                                   f"{month_max}.{cur_data.month}.{cur_data.year}.xlsx"),
+        reply_markup=set_director_inline().as_markup()
+    )
+
+
 """
 Ниже идут все  CallbackQuery для сотрудника
 """
@@ -590,24 +616,24 @@ async def employee_detail_statistics(query: CallbackQuery, state: FSMContext):
     for proc, count, created_at, _ in cur_proc:
         if proc.rate == 0 or count == 0:
             continue
-        if f'{proc.created_at}' not in data:
-            data[f'{proc.created_at}'] = {proc.name: {proc.id: {'count': count,
-                                                                'time': count * proc.time,
-                                                                'money': Decimal(count) * proc.rate}}}
+        if f'{created_at}' not in data:
+            data[f'{created_at}'] = {proc.name: {proc.id: {'count': count,
+                                                           'time': count * proc.time,
+                                                           'money': Decimal(count) * proc.rate}}}
             continue
-        if proc.name not in data[f'{proc.created_at}']:
-            data[f'{proc.created_at}'][proc.name] = {proc.id: {'count': count,
-                                                               'time': count * proc.time,
-                                                               'money': Decimal(count) * proc.rate}}
+        if proc.name not in data[f'{created_at}']:
+            data[f'{created_at}'][proc.name] = {proc.id: {'count': count,
+                                                          'time': count * proc.time,
+                                                          'money': Decimal(count) * proc.rate}}
             continue
-        if proc.id not in data[f'{proc.created_at}'][proc.name]:
-            data[f'{proc.created_at}'][proc.name][proc.id] = {'count': count,
-                                                              'time': count * proc.time,
-                                                              'money': Decimal(count) * proc.rate}
+        if proc.id not in data[f'{created_at}'][proc.name]:
+            data[f'{created_at}'][proc.name][proc.id] = {'count': count,
+                                                         'time': count * proc.time,
+                                                         'money': Decimal(count) * proc.rate}
             continue
-        data[f'{proc.created_at}'][proc.name][proc.id]['count'] += count
-        data[f'{proc.created_at}'][proc.name][proc.id]['time'] += count * proc.time
-        data[f'{proc.created_at}'][proc.name][proc.id]['money'] += Decimal(count) * proc.rate
+        data[f'{created_at}'][proc.name][proc.id]['count'] += count
+        data[f'{created_at}'][proc.name][proc.id]['time'] += count * proc.time
+        data[f'{created_at}'][proc.name][proc.id]['money'] += Decimal(count) * proc.rate
     pprint(data)
     text = ''
     all_count = 0
@@ -639,4 +665,4 @@ async def employee_detail_statistics(query: CallbackQuery, state: FSMContext):
             f'Потрачено времени за этот месяц {all_time}\n' \
             f'Заработано за это месяц: {round(all_money, 1)} руб.\n\n\n</b>'
     await query.message.answer(text,
-                                        reply_markup=set_menu_get_statistics_employee_kb().as_markup())
+                               reply_markup=set_menu_get_statistics_employee_kb().as_markup())

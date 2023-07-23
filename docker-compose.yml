@@ -13,6 +13,13 @@ services:
       - .env
     depends_on:
       - db
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+
 
   db:
     image: postgres
@@ -29,6 +36,12 @@ services:
       retries: 5
       start_period: 10s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+
 
   pgadmin:
     image: dpage/pgadmin4

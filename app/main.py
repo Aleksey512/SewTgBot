@@ -35,23 +35,23 @@ async def main() -> None:
     add_user(session,
              name='Директор',
              surname='Директор',
-             login=f"director1",
+             login=f"director",
              password=f"{os.getenv('DIRECTOR_PASSWORD')}",
              role="director",
              )
     add_user(session,
-             name='Директор2',
-             surname='Директор2',
-             login=f"director2",
+             name='Управляющий1',
+             surname='Управляющий1',
+             login=f"manager1",
              password=f"{os.getenv('DIRECTOR_PASSWORD')}",
-             role="director",
+             role="manager",
              )
     add_user(session,
-             name='Директор3',
-             surname='Директор3',
-             login=f"director3",
+             name='Управляющий2',
+             surname='Управляющий2',
+             login=f"manager2",
              password=f"{os.getenv('DIRECTOR_PASSWORD')}",
-             role="director",
+             role="manager",
              )
     bot = Bot(TG_TOKEN, parse_mode="HTML")
 

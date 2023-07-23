@@ -8,6 +8,7 @@ from keyboards.markup import set_change_profile_inline
 roles = {
     "employee": "Сотрудник",
     "director": "Директор",
+    "manager": "Управляющий",
     "admin": "Администратор"
 }
 

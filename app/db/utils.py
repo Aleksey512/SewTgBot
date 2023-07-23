@@ -5,7 +5,7 @@ from typing import List, Any, Sequence
 import sqlalchemy.exc
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import select, update, and_, Row, func
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, contains_eager
 
 from db.models import User, Brigade, Object, Procedure, User_Procedure
 
@@ -43,6 +43,23 @@ def get_all_objects(sessions: Session):
 def get_all_procedures_by_object(session: Session, object_id: int):
     stmt = select(Procedure).filter(Procedure.object_id == object_id)
     return session.execute(stmt).all()
+
+
+def get_all_information(session: Session):
+    start_month = datetime(datetime.now().year, datetime.now().month, 1, 0, 0, 1)
+    end_month = start_month + relativedelta(months=1)
+
+    query = session.query(Brigade). \
+        join(Brigade.user). \
+        join(User.procedures). \
+        options(contains_eager(Brigade.user).contains_eager(User.procedures))\
+        .filter(and_(
+            func.date(User_Procedure.created_at) >= start_month,
+            func.date(User_Procedure.created_at) < end_month
+        )).\
+        all()
+
+    return query
 
 
 def search_brigade_by_number(session: Session, number: int) -> Brigade | None:
